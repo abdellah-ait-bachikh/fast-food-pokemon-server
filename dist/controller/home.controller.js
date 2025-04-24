@@ -118,10 +118,47 @@ exports.getTopRankingOffers = (0, utils_1.asyncHandler)((req, res) => __awaiter(
 exports.getDeleveryStatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const deleverys = yield db_1.default.user.findMany({
         where: {
-            role: 'LIVREUR'
+            role: "LIVREUR",
+        },
+        select: {
+            id: true,
+            userName: true,
+            createdAt: true,
+            _count: {
+                select: { ordersOffers: true, ordersProducts: true },
+            },
         },
     });
-    const deleverysStatus = yield Promise.all(deleverys.map((item) => __awaiter(void 0, void 0, void 0, function* () {
-        // const statusDelevery = await db.pay
+    const totlaeMoneyInPaymentsProducts = yield Promise.all(deleverys.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+        const paymentsProducts = yield db_1.default.paymentProduct.aggregate({
+            where: {
+                delevryId: item.id,
+            },
+            _sum: {
+                delevryPrice: true,
+            },
+        });
+        const paymentsOffers = yield db_1.default.paymentOffer.aggregate({
+            where: {
+                delevryId: item.id,
+            },
+            _sum: {
+                delevryPrice: true,
+            },
+        });
+        return {
+            id: item.id,
+            useName: item.userName,
+            createdAt: item.createdAt,
+            totalPayments: (item._count.ordersProducts || 0) + (item._count.ordersOffers || 0),
+            totaleMoney: (paymentsOffers._sum.delevryPrice || 0) +
+                (paymentsProducts._sum.delevryPrice || 0),
+        };
     })));
+    res.status(200).json(totlaeMoneyInPaymentsProducts);
+    // const deleverysStatus = await Promise.all(
+    //   deleverys.map(async (item) => {
+    //     const statusDelevery = awaitdb.pay;
+    //   })
+    // );
 }));

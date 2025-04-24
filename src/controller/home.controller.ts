@@ -127,17 +127,54 @@ export const getTopRankingOffers = asyncHandler(
 
 export const getDeleveryStatus = asyncHandler(
   async (req: Request, res: Response) => {
-
     const deleverys = await db.user.findMany({
-      where:{
-        role:'LIVREUR'
+      where: {
+        role: "LIVREUR",
       },
-    })
-
-    const deleverysStatus = await Promise.all(
-      deleverys.map(async(item)=>{
-// const statusDelevery = await db.pay
+      select: {
+        id: true,
+        userName: true,
+        createdAt: true,
+        _count: {
+          select: { ordersOffers: true, ordersProducts: true },
+        },
+      },
+    });
+    const totlaeMoneyInPaymentsProducts = await Promise.all(
+      deleverys.map(async (item) => {
+        const paymentsProducts = await db.paymentProduct.aggregate({
+          where: {
+            delevryId: item.id,
+          },
+          _sum: {
+            delevryPrice: true,
+          },
+        });
+        const paymentsOffers = await db.paymentOffer.aggregate({
+          where: {
+            delevryId: item.id,
+          },
+          _sum: {
+            delevryPrice: true,
+          },
+        });
+        return {
+          id: item.id,
+          useName: item.userName,
+          createdAt: item.createdAt,
+          totalPayments:
+            (item._count.ordersProducts || 0) + (item._count.ordersOffers || 0),
+          totaleMoney:
+            (paymentsOffers._sum.delevryPrice || 0) +
+            (paymentsProducts._sum.delevryPrice || 0),
+        };
       })
-    )
+    );
+    res.status(200).json(totlaeMoneyInPaymentsProducts);
+    // const deleverysStatus = await Promise.all(
+    //   deleverys.map(async (item) => {
+    //     const statusDelevery = awaitdb.pay;
+    //   })
+    // );
   }
 );

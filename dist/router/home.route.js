@@ -6,4 +6,5 @@ const homeRouter = (0, express_1.Router)();
 homeRouter.get("/payments-status", home_controller_1.getPaymentsSatus);
 homeRouter.get("/top-ranking-products", home_controller_1.getTopRankingProducts);
 homeRouter.get("/top-ranking-offers", home_controller_1.getTopRankingOffers);
+homeRouter.get("/top-ranking-deleverys", home_controller_1.getDeleveryStatus);
 exports.default = homeRouter;
