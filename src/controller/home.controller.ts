@@ -121,6 +121,23 @@ export const getTopRankingOffers = asyncHandler(
         return { id: item.offerId, ...offer, quantity: item._sum.quantity };
       })
     );
-    res.status(200).json(topOffers)
+    res.status(200).json(topOffers);
+  }
+);
+
+export const getDeleveryStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const deleverys = await db.user.findMany({
+      where:{
+        role:'LIVREUR'
+      },
+    })
+
+    const deleverysStatus = await Promise.all(
+      deleverys.map(async(item)=>{
+// const statusDelevery = await db.pay
+      })
+    )
   }
 );

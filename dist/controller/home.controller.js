@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTopRankingOffers = exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
+exports.getDeleveryStatus = exports.getTopRankingOffers = exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getPaymentsSatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -114,4 +114,14 @@ exports.getTopRankingOffers = (0, utils_1.asyncHandler)((req, res) => __awaiter(
         return Object.assign(Object.assign({ id: item.offerId }, offer), { quantity: item._sum.quantity });
     })));
     res.status(200).json(topOffers);
+}));
+exports.getDeleveryStatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const deleverys = yield db_1.default.user.findMany({
+        where: {
+            role: 'LIVREUR'
+        },
+    });
+    const deleverysStatus = yield Promise.all(deleverys.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+        // const statusDelevery = await db.pay
+    })));
 }));
