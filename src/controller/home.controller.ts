@@ -94,3 +94,33 @@ export const getTopRankingProducts = asyncHandler(
     res.status(200).json(rankingProducts);
   }
 );
+
+export const getTopRankingOffers = asyncHandler(
+  async (req: Request, res: Response) => {
+    const topOfferByQuantity = await db.paymentOfferDetail.groupBy({
+      by: ["offerId"],
+      _sum: {
+        quantity: true,
+      },
+      orderBy: {
+        _sum: { quantity: "desc" },
+      },
+    });
+    const topOffers = await Promise.all(
+      topOfferByQuantity.map(async (item) => {
+        const offer = await db.offer.findUnique({
+          where: {
+            id: item.offerId,
+          },
+          select: {
+            name: true,
+            createdAt: true,
+            imageFile: true,
+          },
+        });
+        return { id: item.offerId, ...offer, quantity: item._sum.quantity };
+      })
+    );
+    res.status(200).json(topOffers)
+  }
+);

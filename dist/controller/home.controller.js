@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
+exports.getTopRankingOffers = exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getPaymentsSatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -89,4 +89,29 @@ exports.getTopRankingProducts = (0, utils_1.asyncHandler)((req, res) => __awaite
         return Object.assign(Object.assign({ id: item.productId }, product), { quantity: item._sum.quantity || 0 });
     })));
     res.status(200).json(rankingProducts);
+}));
+exports.getTopRankingOffers = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const topOfferByQuantity = yield db_1.default.paymentOfferDetail.groupBy({
+        by: ["offerId"],
+        _sum: {
+            quantity: true,
+        },
+        orderBy: {
+            _sum: { quantity: "desc" },
+        },
+    });
+    const topOffers = yield Promise.all(topOfferByQuantity.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+        const offer = yield db_1.default.offer.findUnique({
+            where: {
+                id: item.offerId,
+            },
+            select: {
+                name: true,
+                createdAt: true,
+                imageFile: true,
+            },
+        });
+        return Object.assign(Object.assign({ id: item.offerId }, offer), { quantity: item._sum.quantity });
+    })));
+    res.status(200).json(topOffers);
 }));
