@@ -91,7 +91,7 @@ export const getTopRankingProducts = asyncHandler(
         };
       })
     );
-    res.status(200).json(rankingProducts);
+    res.status(200).json({rankingProducts,shart:{labels:rankingProducts.map(e=>`${e.name} ${e.category?.name}`),series:rankingProducts.map(e=>e.quantity)}});
   }
 );
 
