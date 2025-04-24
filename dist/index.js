@@ -1,40 +1,40 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.startServer = startServer;
-const client_1 = require("@prisma/client");
 const express_1 = __importDefault(require("express"));
-const db = new client_1.PrismaClient();
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = require("dotenv");
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
+const home_route_1 = __importDefault(require("./router/home.route"));
+const errorHandler_1 = require("./middlewares/errorHandler");
+(0, dotenv_1.config)();
+const PORT = process.env.PORT;
 const app = (0, express_1.default)();
-app.get("/api/users", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = yield db.user.create({
-        data: {
-            name: "test user ",
-        },
+const server = http_1.default.createServer(app);
+const corsOptions = {
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+};
+const io = new socket_io_1.Server(server, { cors: corsOptions });
+app.use(express_1.default.json());
+app.use((0, cors_1.default)(corsOptions));
+io.on("connection", (socket) => {
+    console.log(`user connecte withe id : ${socket.id}`);
+    io.on("disconnect", () => {
+        console.log(`user disconnected with id : ${socket.id}`);
     });
-    const users = yield db.user.findMany();
-    res.json({ message: "hello user", users });
-}));
-app.get("/api/test", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.json({ message: "hello test" });
-}));
-app.get("/api/helow", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.json({ message: "hello helow" });
-}));
-const PORT = process.env.PORT || 3000;
-function startServer() {
-    app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
-    });
-}
+});
+//routers
+app.use("/api/home", home_route_1.default);
+app.use(errorHandler_1.errorHandler);
+server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});
+// export function startServer() {
+//   app.listen(PORT, () => {
+//     console.log(`Server running at http://localhost:${PORT}`);
+//   });
+// }
