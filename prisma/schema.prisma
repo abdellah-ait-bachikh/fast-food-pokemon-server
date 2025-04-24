@@ -11,10 +11,141 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  userName  String   @unique
-  password  String
-  isAdmin   Boolean  @default(false)
+  id             Int              @id @default(autoincrement())
+  userName       String           @unique
+  password       String
+  phone          String
+  role           userRole         @default(LIVREUR)
+  ordersProducts PaymentProduct[]
+  ordersOffers   PaymentOffer[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("users")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  position  Int?
+  name      String    @unique
+  imageFile String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id              Int              @id @default(autoincrement())
+  position        Int?
+  name            String
+  price           Float
+  isPublish       Boolean          @default(true)
+  type            ProductType?
+  categoryId      Int?
+  category        Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  paymentsProduct PaymentProduct[]
+  Offers          Offer[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("products")
+}
+
+model PaymentProduct {
+  id                Int       @id @default(autoincrement())
+  dailyNumber       Int       @default(0)
+  products          Product[]
+  details           Json
+  totalePrice       Float
+  isPayed           Boolean   @default(true)
+  delevryPrice      Float?
+  clientPhoneNumber String?
+  delevryId         Int?
+  delevry           User?     @relation(fields: [delevryId], references: [id], onDelete: SetNull)
+  order             Order?
+  dayId             Int
+  day               Day       @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("payments")
+}
+
+model Order {
+  id               Int             @id @default(autoincrement())
+  status           OrderStatus     @default(EN_COURS_DE_PREPARATION)
+  paymentProductId Int?            @unique
+  paymentProduct   PaymentProduct? @relation(fields: [paymentProductId], references: [id])
+  paymentOfferId   Int?            @unique
+  paymentOffer     PaymentOffer?   @relation(fields: [paymentOfferId], references: [id])
+  isAccepted       Boolean         @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model Offer {
+  id             Int            @id @default(autoincrement())
+  name           String
+  products       Product[]
+  price          Float
+  isPublish      Boolean        @default(true)
+  imageFile      String?
+  PaymentsOffers PaymentOffer[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@map("offers")
+}
+
+model PaymentOffer {
+  id                Int      @id @default(autoincrement())
+  dailyNumber       Int      @default(0)
+  offers            Offer[]
+  details           Json
+  isPayed           Boolean  @default(true)
+  totalePrice       Float
+  delevryPrice      Float?
+  clientPhoneNumber String?
+  delevryId         Int?
+  delevry           User?    @relation(fields: [delevryId], references: [id], onDelete: SetNull)
+  order             Order?
+  dayId             Int
+  day               Day      @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("payment_offer")
+}
+
+model Day {
+  id               Int              @id @default(autoincrement())
+  startAt          DateTime         @default(now())
+  stopeAt          DateTime?
+  paymentsProducts PaymentProduct[]
+  paymentsOffers   PaymentOffer[]
+
+  @@map("days")
+}
+
+enum OrderStatus {
+  EN_COURS_DE_PREPARATION @map("en cours de préparation")
+  RAMASSE                 @map("ramacé")
+  LIVREE                  @map("livrée")
+  REFUSE                  @map("refusé")
+}
+
+enum ProductType {
+  CHARBON @map("charbon")
+  PANINI  @map("panini")
+  FOUR    @map("four")
+}
+
+enum userRole {
+  ADMIN   @map("admin")
+  LIVREUR @map("livreur")
 }
