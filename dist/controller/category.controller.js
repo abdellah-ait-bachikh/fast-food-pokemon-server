@@ -21,6 +21,7 @@ exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(voi
             id: true,
             name: true,
         },
+        orderBy: { name: "asc" },
     });
     res.status(200).json(categories);
 }));
@@ -33,9 +34,22 @@ exports.getCategoriesWithProductCount = (0, utils_1.asyncHandler)((req, res) => 
                 },
             },
         },
+        orderBy: {
+            createdAt: "desc",
+        },
     });
     res.status(200).json(categories);
 }));
+// export const getCategoriesWithProduct = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const categories = await db.category.findMany({
+//       include: {
+//         products: true,
+//       },orderBy:
+//     });
+//     res.status(200).json(categories);
+//   }
+// );
 exports.deleteCtagory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const category = yield db_1.default.category.findUnique({

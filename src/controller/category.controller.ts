@@ -9,6 +9,7 @@ export const getAllCategories = asyncHandler(
         id: true,
         name: true,
       },
+      orderBy: { name: "asc" },
     });
     res.status(200).json(categories);
   }
@@ -24,10 +25,23 @@ export const getCategoriesWithProductCount = asyncHandler(
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
     res.status(200).json(categories);
   }
 );
+// export const getCategoriesWithProduct = asyncHandler(
+//   async (req: Request, res: Response) => {
+//     const categories = await db.category.findMany({
+//       include: {
+//         products: true,
+//       },orderBy:
+//     });
+//     res.status(200).json(categories);
+//   }
+// );
 
 export const deleteCtagory = asyncHandler(
   async (req: Request, res: Response) => {
