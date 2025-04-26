@@ -7,7 +7,7 @@ import {
 } from "../controller/category.controller";
 
 const categoryRoutes = Router();
-categoryRoutes.get("/", getCategoriesWithProductCount);
+categoryRoutes.get("/productsCount", getCategoriesWithProductCount);
 categoryRoutes.get("/withProducts", getCategoriesWithProduct);
 categoryRoutes.get("/select", getAllCategories);
 
