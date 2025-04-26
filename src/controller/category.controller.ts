@@ -14,6 +14,21 @@ export const getAllCategories = asyncHandler(
   }
 );
 
+export const getCategoriesWithProductCount = asyncHandler(
+  async (req: Request, res: Response) => {
+    const categories = await db.category.findMany({
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+    });
+    res.status(200).json(categories);
+  }
+);
+
 export const deleteCtagory = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;

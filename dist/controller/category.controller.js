@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCtagory = exports.getAllCategories = void 0;
+exports.deleteCtagory = exports.getCategoriesWithProductCount = exports.getAllCategories = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -20,6 +20,18 @@ exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(voi
         select: {
             id: true,
             name: true,
+        },
+    });
+    res.status(200).json(categories);
+}));
+exports.getCategoriesWithProductCount = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const categories = yield db_1.default.category.findMany({
+        include: {
+            _count: {
+                select: {
+                    products: true,
+                },
+            },
         },
     });
     res.status(200).json(categories);
