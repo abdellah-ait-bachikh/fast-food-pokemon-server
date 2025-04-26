@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllCategories = void 0;
+exports.deleteCtagory = exports.getAllCategories = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -23,4 +23,22 @@ exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(voi
         },
     });
     res.status(200).json(categories);
+}));
+exports.deleteCtagory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const category = yield db_1.default.category.findUnique({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    if (!category) {
+        res.status(404).json({ message: "Category non trouvé" });
+        return;
+    }
+    yield db_1.default.category.delete({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    res.status(200).json({ message: "Catégorie supprimée avec succès" });
 }));

@@ -13,3 +13,24 @@ export const getAllCategories = asyncHandler(
     res.status(200).json(categories);
   }
 );
+
+export const deleteCtagory = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const category = await db.category.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    if (!category) {
+      res.status(404).json({ message: "Category non trouvé" });
+      return;
+    }
+    await db.category.delete({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    res.status(200).json({ message: "Catégorie supprimée avec succès" });
+  }
+);
