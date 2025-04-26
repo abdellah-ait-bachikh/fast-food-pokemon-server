@@ -6,6 +6,7 @@ import http from "http";
 import { Server, Socket } from "socket.io";
 import homeRouter from "./router/home.route";
 import { errorHandler } from "./middlewares/errorHandler";
+import categoryRoutes from "./router/category.route";
 
 config();
 const PORT = process.env.PORT;
@@ -31,9 +32,9 @@ io.on("connection", (socket: Socket) => {
 
 //routers
 app.use("/api/home", homeRouter);
+app.use("/api/categories", categoryRoutes);
 
-
-app.use(errorHandler)
+app.use(errorHandler);
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

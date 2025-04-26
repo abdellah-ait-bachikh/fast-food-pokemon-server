@@ -10,6 +10,7 @@ const http_1 = __importDefault(require("http"));
 const socket_io_1 = require("socket.io");
 const home_route_1 = __importDefault(require("./router/home.route"));
 const errorHandler_1 = require("./middlewares/errorHandler");
+const category_route_1 = __importDefault(require("./router/category.route"));
 (0, dotenv_1.config)();
 const PORT = process.env.PORT;
 const app = (0, express_1.default)();
@@ -29,6 +30,7 @@ io.on("connection", (socket) => {
 });
 //routers
 app.use("/api/home", home_route_1.default);
+app.use("/api/categories", category_route_1.default);
 app.use(errorHandler_1.errorHandler);
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
