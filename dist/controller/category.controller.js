@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCtagory = exports.getCategoriesWithProductCount = exports.getAllCategories = void 0;
+exports.deleteCtagory = exports.getCategoriesWithProduct = exports.getCategoriesWithProductCount = exports.getAllCategories = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getAllCategories = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -40,16 +40,33 @@ exports.getCategoriesWithProductCount = (0, utils_1.asyncHandler)((req, res) => 
     });
     res.status(200).json(categories);
 }));
-// export const getCategoriesWithProduct = asyncHandler(
-//   async (req: Request, res: Response) => {
-//     const categories = await db.category.findMany({
-//       include: {
-//         products: true,
-//       },orderBy:
-//     });
-//     res.status(200).json(categories);
-//   }
-// );
+exports.getCategoriesWithProduct = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const categories = yield db_1.default.category.findMany({
+        select: {
+            id: true,
+            imageFile: true,
+            name: true,
+            position: true,
+            products: {
+                select: {
+                    name: true,
+                    price: true,
+                    position: true,
+                },
+                where: {
+                    isPublish: true,
+                },
+                orderBy: {
+                    position: "asc",
+                },
+            },
+        },
+        orderBy: {
+            position: "asc",
+        },
+    });
+    res.status(200).json(categories);
+}));
 exports.deleteCtagory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const category = yield db_1.default.category.findUnique({

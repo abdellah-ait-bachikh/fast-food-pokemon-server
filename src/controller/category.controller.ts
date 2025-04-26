@@ -32,16 +32,35 @@ export const getCategoriesWithProductCount = asyncHandler(
     res.status(200).json(categories);
   }
 );
-// export const getCategoriesWithProduct = asyncHandler(
-//   async (req: Request, res: Response) => {
-//     const categories = await db.category.findMany({
-//       include: {
-//         products: true,
-//       },orderBy:
-//     });
-//     res.status(200).json(categories);
-//   }
-// );
+export const getCategoriesWithProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const categories = await db.category.findMany({
+      select: {
+        id: true,
+        imageFile: true,
+        name: true,
+        position: true,
+        products: {
+          select: {
+            name: true,
+            price: true,
+            position: true,
+          },
+          where: {
+            isPublish: true,
+          },
+          orderBy: {
+            position: "asc",
+          },
+        },
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
+    res.status(200).json(categories);
+  }
+);
 
 export const deleteCtagory = asyncHandler(
   async (req: Request, res: Response) => {
