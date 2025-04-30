@@ -28,7 +28,7 @@ model Category {
   id        Int       @id @default(autoincrement())
   position  Int?
   name      String    @unique
-  imageFile String?
+  imageUri String?
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -105,7 +105,7 @@ model Offer {
   products       Product[]
   price          Float
   isPublish      Boolean        @default(true)
-  imageFile      String?
+  imageUri      String?
   PaymentsOffers PaymentOffer[]
   paymentsOfferDetails PaymentOfferDetail[]
   createdAt      DateTime       @default(now())

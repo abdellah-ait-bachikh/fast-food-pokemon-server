@@ -1,8 +1,11 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "../lib/utils";
 import db from "../lib/db";
-import { TcreateCatgory } from "../types/category.type";
-import { validateCreateCategory } from "../validation/category.validation";
+import { TcreateCatgory, TupdateCategory } from "../types/category.type";
+import {
+  validateCreateCategory,
+  validateUpdateCategory,
+} from "../validation/category.validation";
 
 export const getAllCategories = asyncHandler(
   async (req: Request, res: Response) => {
@@ -40,7 +43,7 @@ export const getCategoriesWithProduct = asyncHandler(
     const categories = await db.category.findMany({
       select: {
         id: true,
-        imageFile: true,
+        imageUri: true,
         name: true,
         position: true,
         products: {
@@ -74,7 +77,7 @@ export const getCategory = asyncHandler(async (req: Request, res: Response) => {
     select: {
       id: true,
       name: true,
-      imageFile: true,
+      imageUri: true,
       position: true,
     },
   });
@@ -158,5 +161,40 @@ export const createCategory = asyncHandler(
     res
       .status(201)
       .json({ message: "Catégorie créée avec succès.", category: newCategory });
+  }
+);
+
+export const updateCategory = asyncHandler(
+  async (req: Request<{}, {}, TupdateCategory>, res: Response) => {
+    const { id } = req.params as { id: string };
+    const { name, position } = req.body;
+    const existCategory = await db.category.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    if (!existCategory) {
+      res.status(404).json({ message: "Category non trouvé" });
+      return;
+    }
+    const { data, errors } = validateUpdateCategory({ name, position });
+    if (!data) {
+      res.status(400).json({ message: "Erreur de validation", errors });
+      return;
+    }
+    const newCategory = await db.category.update({
+      where: {
+        id: parseInt(id),
+      },
+      data,
+      include: {
+        _count: {
+          select: {
+            products: true,
+          },
+        },
+      },
+    });
+    res.status(200).json({ message: "Catégorie modifiée avec succès.", category: newCategory });
   }
 );

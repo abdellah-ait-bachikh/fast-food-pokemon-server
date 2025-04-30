@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCategory = exports.deleteCtagory = exports.getShowCategory = exports.getCategory = exports.getCategoriesWithProduct = exports.getCategoriesWithProductCount = exports.getAllCategories = void 0;
+exports.updateCategory = exports.createCategory = exports.deleteCtagory = exports.getShowCategory = exports.getCategory = exports.getCategoriesWithProduct = exports.getCategoriesWithProductCount = exports.getAllCategories = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 const category_validation_1 = require("../validation/category.validation");
@@ -45,7 +45,7 @@ exports.getCategoriesWithProduct = (0, utils_1.asyncHandler)((req, res) => __awa
     const categories = yield db_1.default.category.findMany({
         select: {
             id: true,
-            imageFile: true,
+            imageUri: true,
             name: true,
             position: true,
             products: {
@@ -77,7 +77,7 @@ exports.getCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, 
         select: {
             id: true,
             name: true,
-            imageFile: true,
+            imageUri: true,
             position: true,
         },
     });
@@ -153,4 +153,36 @@ exports.createCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 
     res
         .status(201)
         .json({ message: "Catégorie créée avec succès.", category: newCategory });
+}));
+exports.updateCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const { name, position } = req.body;
+    const existCategory = yield db_1.default.category.findUnique({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    if (!existCategory) {
+        res.status(404).json({ message: "Category non trouvé" });
+        return;
+    }
+    const { data, errors } = (0, category_validation_1.validateUpdateCategory)({ name, position });
+    if (!data) {
+        res.status(400).json({ message: "Erreur de validation", errors });
+        return;
+    }
+    const newCategory = yield db_1.default.category.update({
+        where: {
+            id: parseInt(id),
+        },
+        data,
+        include: {
+            _count: {
+                select: {
+                    products: true,
+                },
+            },
+        },
+    });
+    res.status(200).json({ message: "Catégorie modifiée avec succès.", category: newCategory });
 }));
