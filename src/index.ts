@@ -35,12 +35,19 @@ app.use("/api/home", homeRouter);
 app.use("/api/categories", categoryRoutes);
 
 app.use(errorHandler);
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+// server.listen(PORT, () => {
+//   console.log(`Server running at http://localhost:${PORT}`);
+// });
 
-// export function startServer() {
-//   app.listen(PORT, () => {
-//     console.log(`Server running at http://localhost:${PORT}`);
-//   });
-// }
+export function startServer() {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(" raning in development");
+  } else if (process.env.NODE_ENv === "production") {
+    console.log(" raning in production");
+  }
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();

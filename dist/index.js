@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.startServer = startServer;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = require("dotenv");
@@ -32,11 +33,18 @@ io.on("connection", (socket) => {
 app.use("/api/home", home_route_1.default);
 app.use("/api/categories", category_route_1.default);
 app.use(errorHandler_1.errorHandler);
-server.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
-// export function startServer() {
-//   app.listen(PORT, () => {
-//     console.log(`Server running at http://localhost:${PORT}`);
-//   });
-// }
+// server.listen(PORT, () => {
+//   console.log(`Server running at http://localhost:${PORT}`);
+// });
+function startServer() {
+    if (process.env.NODE_ENV === 'development') {
+        console.log(" raning in development");
+    }
+    else if (process.env.NODE_ENv === "production") {
+        console.log(" raning in production");
+    }
+    app.listen(PORT, () => {
+        console.log(`Server running at http://localhost:${PORT}`);
+    });
+}
+startServer();
