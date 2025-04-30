@@ -73,5 +73,5 @@ export const validateUpdateCategory = (category: TupdateCategory) => {
       },
     };
   }
-  return { errors: null, data:result };
+  return { errors: null, data: result.data };
 };

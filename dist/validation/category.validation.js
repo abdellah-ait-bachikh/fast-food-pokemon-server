@@ -69,6 +69,6 @@ const validateUpdateCategory = (category) => {
             },
         };
     }
-    return { errors: null, data: result };
+    return { errors: null, data: result.data };
 };
 exports.validateUpdateCategory = validateUpdateCategory;

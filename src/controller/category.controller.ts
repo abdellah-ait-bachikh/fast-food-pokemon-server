@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { asyncHandler } from "../lib/utils";
+import { asyncHandler, deleteFile } from "../lib/utils";
 import db from "../lib/db";
 import { TcreateCatgory, TupdateCategory } from "../types/category.type";
 import {
@@ -119,11 +119,13 @@ export const deleteCtagory = asyncHandler(
       res.status(404).json({ message: "Category non trouvé" });
       return;
     }
+    const imageFile = category.imageUri || undefined;
     await db.category.delete({
       where: {
         id: parseInt(id),
       },
     });
+    deleteFile(imageFile, "uploads/images/categories");
     res.status(200).json({ message: "Catégorie supprimée avec succès" });
   }
 );
@@ -132,7 +134,9 @@ export const createCategory = asyncHandler(
   async (req: Request<{}, {}, TcreateCatgory>, res: Response) => {
     const { name, position } = req.body;
     const { data, errors } = validateCreateCategory({ name, position });
+    const imageFile = req.file?.filename;
     if (!data) {
+      deleteFile(imageFile, "uploads/images/categories");
       res.status(400).json({ message: "Erreur de validation", errors });
       return;
     }
@@ -142,6 +146,8 @@ export const createCategory = asyncHandler(
       },
     });
     if (isExest) {
+      deleteFile(imageFile, "uploads/images/categories");
+
       res.status(400).json({
         message: "Erreur de validation",
         errors: { name: ["Ce nom existe déjà."] },
@@ -149,7 +155,10 @@ export const createCategory = asyncHandler(
       return;
     }
     const newCategory = await db.category.create({
-      data,
+      data: {
+        ...data,
+        imageUri: imageFile,
+      },
       include: {
         _count: {
           select: {
@@ -195,6 +204,9 @@ export const updateCategory = asyncHandler(
         },
       },
     });
-    res.status(200).json({ message: "Catégorie modifiée avec succès.", category: newCategory });
+    res.status(200).json({
+      message: "Catégorie modifiée avec succès.",
+      category: newCategory,
+    });
   }
 );

@@ -7,7 +7,9 @@ import {
   getCategoriesWithProductCount,
   getCategory,
   getShowCategory,
+  updateCategory,
 } from "../controller/category.controller";
+import upload from "../middlewares/uploadCategoryImages";
 
 const categoryRoutes = Router();
 
@@ -19,10 +21,10 @@ categoryRoutes.get("/:id", getCategory);
 categoryRoutes.get("/show/:id", getShowCategory);
 
 //POST
-categoryRoutes.post("/", createCategory);
+categoryRoutes.post("/",upload.single('image'), createCategory);
 
 //Put
-categoryRoutes.put("/:id", createCategory);
+categoryRoutes.put("/:id", updateCategory);
 
 //DELETE
 categoryRoutes.delete("/:id", deleteCtagory);

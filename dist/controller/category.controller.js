@@ -114,17 +114,22 @@ exports.deleteCtagory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0
         res.status(404).json({ message: "Category non trouvé" });
         return;
     }
+    const imageFile = category.imageUri || undefined;
     yield db_1.default.category.delete({
         where: {
             id: parseInt(id),
         },
     });
+    (0, utils_1.deleteFile)(imageFile, "uploads/images/categories");
     res.status(200).json({ message: "Catégorie supprimée avec succès" });
 }));
 exports.createCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     const { name, position } = req.body;
     const { data, errors } = (0, category_validation_1.validateCreateCategory)({ name, position });
+    const imageFile = (_a = req.file) === null || _a === void 0 ? void 0 : _a.filename;
     if (!data) {
+        (0, utils_1.deleteFile)(imageFile, "uploads/images/categories");
         res.status(400).json({ message: "Erreur de validation", errors });
         return;
     }
@@ -134,6 +139,7 @@ exports.createCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 
         },
     });
     if (isExest) {
+        (0, utils_1.deleteFile)(imageFile, "uploads/images/categories");
         res.status(400).json({
             message: "Erreur de validation",
             errors: { name: ["Ce nom existe déjà."] },
@@ -141,7 +147,7 @@ exports.createCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 
         return;
     }
     const newCategory = yield db_1.default.category.create({
-        data,
+        data: Object.assign(Object.assign({}, data), { imageUri: imageFile }),
         include: {
             _count: {
                 select: {
@@ -184,5 +190,8 @@ exports.updateCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 
             },
         },
     });
-    res.status(200).json({ message: "Catégorie modifiée avec succès.", category: newCategory });
+    res.status(200).json({
+        message: "Catégorie modifiée avec succès.",
+        category: newCategory,
+    });
 }));
