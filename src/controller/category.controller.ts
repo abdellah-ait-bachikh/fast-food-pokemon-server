@@ -119,13 +119,13 @@ export const deleteCtagory = asyncHandler(
       res.status(404).json({ message: "Category non trouvé" });
       return;
     }
-    const imageFile = category.imageUri || undefined;
+    const imageName = category.imageUri || undefined;
     await db.category.delete({
       where: {
         id: parseInt(id),
       },
     });
-    deleteFile(imageFile, "uploads/images/categories");
+    deleteFile(imageName, "uploads/images/categories");
     res.status(200).json({ message: "Catégorie supprimée avec succès" });
   }
 );
@@ -134,9 +134,9 @@ export const createCategory = asyncHandler(
   async (req: Request<{}, {}, TcreateCatgory>, res: Response) => {
     const { name, position } = req.body;
     const { data, errors } = validateCreateCategory({ name, position });
-    const imageFile = req.file?.filename;
+    const imageName = req.file?.filename;
     if (!data) {
-      deleteFile(imageFile, "uploads/images/categories");
+      deleteFile(imageName, "uploads/images/categories");
       res.status(400).json({ message: "Erreur de validation", errors });
       return;
     }
@@ -146,7 +146,7 @@ export const createCategory = asyncHandler(
       },
     });
     if (isExest) {
-      deleteFile(imageFile, "uploads/images/categories");
+      deleteFile(imageName, "uploads/images/categories");
 
       res.status(400).json({
         message: "Erreur de validation",
@@ -157,7 +157,7 @@ export const createCategory = asyncHandler(
     const newCategory = await db.category.create({
       data: {
         ...data,
-        imageUri: imageFile,
+        imageUri: imageName,
       },
       include: {
         _count: {
@@ -175,8 +175,11 @@ export const createCategory = asyncHandler(
 
 export const updateCategory = asyncHandler(
   async (req: Request<{}, {}, TupdateCategory>, res: Response) => {
+    console.log(req.body);
     const { id } = req.params as { id: string };
-    const { name, position } = req.body;
+    const { name, position,imageUri } = req.body;
+    const newImageName = req.file?.filename;
+    let updatedImageUri: string | null | undefined = undefined;
     const existCategory = await db.category.findUnique({
       where: {
         id: parseInt(id),
@@ -191,11 +194,19 @@ export const updateCategory = asyncHandler(
       res.status(400).json({ message: "Erreur de validation", errors });
       return;
     }
+    if(imageUri===null){
+      updatedImageUri = null
+    }else if(newImageName) {
+      updatedImageUri=newImageName
+    }
     const newCategory = await db.category.update({
       where: {
         id: parseInt(id),
       },
-      data,
+      data: {
+        ...data,
+        imageUri: updatedImageUri,
+      },
       include: {
         _count: {
           select: {
@@ -204,6 +215,11 @@ export const updateCategory = asyncHandler(
         },
       },
     });
+    if (updatedImageUri || updatedImageUri===null) {
+      if (existCategory.imageUri) {
+        deleteFile(existCategory.imageUri, "uploads/images/categories");
+      }
+    }
     res.status(200).json({
       message: "Catégorie modifiée avec succès.",
       category: newCategory,

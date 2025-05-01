@@ -16,7 +16,7 @@ categoryRoutes.get("/show/:id", category_controller_1.getShowCategory);
 //POST
 categoryRoutes.post("/", uploadCategoryImages_1.default.single('image'), category_controller_1.createCategory);
 //Put
-categoryRoutes.put("/:id", category_controller_1.updateCategory);
+categoryRoutes.put("/:id", uploadCategoryImages_1.default.single('image'), category_controller_1.updateCategory);
 //DELETE
 categoryRoutes.delete("/:id", category_controller_1.deleteCtagory);
 exports.default = categoryRoutes;

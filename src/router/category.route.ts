@@ -24,7 +24,7 @@ categoryRoutes.get("/show/:id", getShowCategory);
 categoryRoutes.post("/",upload.single('image'), createCategory);
 
 //Put
-categoryRoutes.put("/:id", updateCategory);
+categoryRoutes.put("/:id",upload.single('image'), updateCategory);
 
 //DELETE
 categoryRoutes.delete("/:id", deleteCtagory);

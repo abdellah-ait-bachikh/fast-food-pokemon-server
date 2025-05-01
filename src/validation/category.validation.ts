@@ -18,6 +18,7 @@ export const validateCreateCategory = (category: TcreateCatgory) => {
       .min(0, { message: "Position doit être positive." })
       .optional()
       .default(0),
+    
   });
 
   const result = schema.safeParse({
