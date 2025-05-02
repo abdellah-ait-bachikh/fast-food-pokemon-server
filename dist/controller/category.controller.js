@@ -70,6 +70,11 @@ exports.getCategoriesWithProduct = (0, utils_1.asyncHandler)((req, res) => __awa
 }));
 exports.getCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+        res.status(400).json({ message: "ID  invalide." });
+        return;
+    }
     const category = yield db_1.default.category.findUnique({
         where: {
             id: parseInt(id),
@@ -89,6 +94,11 @@ exports.getCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, 
 }));
 exports.getShowCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+        res.status(400).json({ message: "ID  invalide." });
+        return;
+    }
     const category = yield db_1.default.category.findUnique({
         where: {
             id: parseInt(id),
@@ -105,6 +115,11 @@ exports.getShowCategory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void
 }));
 exports.deleteCtagory = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+        res.status(400).json({ message: "ID  invalide." });
+        return;
+    }
     const category = yield db_1.default.category.findUnique({
         where: {
             id: parseInt(id),

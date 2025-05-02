@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDayShow = exports.getLatestDay = exports.getDaysWithPaymentsCounts = void 0;
+exports.stopDay = exports.createDay = exports.getDayShow = exports.getLatestDay = exports.getDaysWithPaymentsCounts = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -58,6 +58,11 @@ exports.getLatestDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0,
 }));
 exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+        res.status(400).json({ message: "ID  invalide." });
+        return;
+    }
     const day = yield db_1.default.day.findUnique({
         where: { id: parseInt(id) },
         include: {
@@ -128,4 +133,54 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
         },
     });
     res.status(200).json(Object.assign(Object.assign({}, day), { deleverys }));
+}));
+exports.createDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const latestDay = yield db_1.default.day.findFirst({
+        orderBy: {
+            startAt: "desc",
+        },
+    });
+    if (latestDay && latestDay.stopAt === null) {
+        res
+            .status(400)
+            .json({ message: "Vous devez d'abord clôturer la dernière journée." });
+        return;
+    }
+    const newDay = yield db_1.default.day.create({
+        data: {
+            startAt: new Date(),
+        },
+    });
+    res.status(201).json({ message: "La journée a démarré avec succès." });
+}));
+exports.stopDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+        res.status(400).json({ message: "ID  invalide." });
+        return;
+    }
+    const latestDay = yield db_1.default.day.findUnique({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    if (!latestDay) {
+        res.status(400).json({ message: "Aucune journée trouvée à clôturer." });
+        return;
+    }
+    if (latestDay.stopAt !== null) {
+        res.status(400).json({
+            message: "Cette journée est déjà clôturée.",
+        });
+        return;
+    }
+    const stoppedDay = yield db_1.default.day.update({
+        where: { id: latestDay.id },
+        data: { stopAt: new Date() },
+    });
+    res.status(200).json({
+        message: "Journée clôturée avec succès.",
+        data: stoppedDay,
+    });
 }));

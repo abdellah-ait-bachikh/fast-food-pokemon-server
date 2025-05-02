@@ -19,7 +19,6 @@ const fs_1 = __importDefault(require("fs"));
 exports.getImageByName = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { imageName } = req.params;
     const imagePath = path_1.default.join(__dirname, "../../uploads/images/categories", imageName);
-    console.log(imagePath);
     if (fs_1.default.existsSync(imagePath)) {
         console.log("exist");
         res.sendFile(imagePath);

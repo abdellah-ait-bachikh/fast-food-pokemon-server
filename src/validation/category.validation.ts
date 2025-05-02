@@ -1,5 +1,5 @@
 import { date, z } from "zod";
-import { TcreateCatgory, TupdateCategory } from "../types/category.type";
+import { TcreateCatgory, TupdateCategory } from "../types/models.type";
 
 export const validateCreateCategory = (category: TcreateCatgory) => {
   const schema = z.object({

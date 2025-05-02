@@ -6,4 +6,5 @@ const dayRouter = (0, express_1.Router)();
 dayRouter.get("/count-payments", day_controller_1.getDaysWithPaymentsCounts);
 dayRouter.get("/latest", day_controller_1.getLatestDay);
 dayRouter.get("/show/:id", day_controller_1.getDayShow);
+dayRouter.put("/stop/:id", day_controller_1.stopDay);
 exports.default = dayRouter;

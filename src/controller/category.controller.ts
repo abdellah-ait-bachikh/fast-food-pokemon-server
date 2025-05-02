@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler, deleteFile } from "../lib/utils";
 import db from "../lib/db";
-import { TcreateCatgory, TupdateCategory } from "../types/category.type";
+import { TcreateCatgory, TupdateCategory } from "../types/models.type";
 import {
   validateCreateCategory,
   validateUpdateCategory,
@@ -70,6 +70,11 @@ export const getCategoriesWithProduct = asyncHandler(
 
 export const getCategory = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const dayId = parseInt(id);
+  if (isNaN(dayId)) {
+    res.status(400).json({ message: "ID  invalide." });
+    return;
+  }
   const category = await db.category.findUnique({
     where: {
       id: parseInt(id),
@@ -91,6 +96,11 @@ export const getCategory = asyncHandler(async (req: Request, res: Response) => {
 export const getShowCategory = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+  const dayId = parseInt(id);
+  if (isNaN(dayId)) {
+    res.status(400).json({ message: "ID  invalide." });
+    return;
+  }
     const category = await db.category.findUnique({
       where: {
         id: parseInt(id),
@@ -110,6 +120,11 @@ export const getShowCategory = asyncHandler(
 export const deleteCtagory = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+  const dayId = parseInt(id);
+  if (isNaN(dayId)) {
+    res.status(400).json({ message: "ID  invalide." });
+    return;
+  }
     const category = await db.category.findUnique({
       where: {
         id: parseInt(id),

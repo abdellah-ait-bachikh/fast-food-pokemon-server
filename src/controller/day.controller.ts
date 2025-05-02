@@ -43,7 +43,11 @@ export const getLatestDay = asyncHandler(
 
 export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-
+  const dayId = parseInt(id);
+  if (isNaN(dayId)) {
+    res.status(400).json({ message: "ID  invalide." });
+    return;
+  }
   const day = await db.day.findUnique({
     where: { id: parseInt(id) },
     include: {
@@ -116,3 +120,61 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ ...day, deleverys });
 });
 
+export const createDay = asyncHandler(
+  async (req: Request<{}, {}, {}>, res: Response) => {
+    const latestDay = await db.day.findFirst({
+      orderBy: {
+        startAt: "desc",
+      },
+    });
+    if (latestDay && latestDay.stopAt === null) {
+      res
+        .status(400)
+        .json({ message: "Vous devez d'abord clôturer la dernière journée." });
+      return;
+    }
+    const newDay = await db.day.create({
+      data: {
+        startAt: new Date(),
+      },
+    });
+    res.status(201).json({ message: "La journée a démarré avec succès." });
+  }
+);
+
+export const stopDay = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const dayId = parseInt(id);
+    if (isNaN(dayId)) {
+      res.status(400).json({ message: "ID  invalide." });
+      return;
+    }
+
+  const latestDay = await db.day.findUnique({
+    where: {
+      id: parseInt(id),
+    },
+  });
+
+  if (!latestDay) {
+    res.status(400).json({ message: "Aucune journée trouvée à clôturer." });
+    return;
+  }
+
+  if (latestDay.stopAt !== null) {
+    res.status(400).json({
+      message: "Cette journée est déjà clôturée.",
+    });
+    return;
+  }
+
+  const stoppedDay = await db.day.update({
+    where: { id: latestDay.id },
+    data: { stopAt: new Date() },
+  });
+
+  res.status(200).json({
+    message: "Journée clôturée avec succès.",
+    data: stoppedDay,
+  });
+});

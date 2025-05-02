@@ -185,40 +185,42 @@ export const getDeleveryStatus = asyncHandler(
   }
 );
 
-export const getMonthlyPaymentStats = asyncHandler(async (req: Request, res: Response) => {
-  const now = new Date();
-  const startYear = new Date(now.getFullYear(), 0, 1);
+export const getMonthlyPaymentStats = asyncHandler(
+  async (req: Request, res: Response) => {
+    const now = new Date();
+    const startYear = new Date(now.getFullYear(), 0, 1);
 
-  const [productPayments, offerPayments] = await Promise.all([
-    db.paymentProduct.findMany({
-      where: { isPayed: true, createdAt: { gte: startYear } },
-      select: { totalePrice: true, createdAt: true },
-    }),
-    db.paymentOffer.findMany({
-      where: { isPayed: true, createdAt: { gte: startYear } },
-      select: { totalePrice: true, createdAt: true },
-    }),
-  ]);
+    const [productPayments, offerPayments] = await Promise.all([
+      db.paymentProduct.findMany({
+        where: { isPayed: true, createdAt: { gte: startYear } },
+        select: { totalePrice: true, createdAt: true },
+      }),
+      db.paymentOffer.findMany({
+        where: { isPayed: true, createdAt: { gte: startYear } },
+        select: { totalePrice: true, createdAt: true },
+      }),
+    ]);
 
-  const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
-    month: i, // 0 = Jan
-    total: 0,
-    count: 0,
-  }));
+    const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
+      month: i, // 0 = Jan
+      total: 0,
+      count: 0,
+    }));
 
-  const allPayments = [...productPayments, ...offerPayments];
+    const allPayments = [...productPayments, ...offerPayments];
 
-  for (const payment of allPayments) {
-    const month = new Date(payment.createdAt).getMonth();
-    monthlyStats[month].total += Number(payment.totalePrice || 0);
-    monthlyStats[month].count += 1;
+    for (const payment of allPayments) {
+      const month = new Date(payment.createdAt).getMonth();
+      monthlyStats[month].total += Number(payment.totalePrice || 0);
+      monthlyStats[month].count += 1;
+    }
+
+    const formattedStats = monthlyStats.map((entry, index) => ({
+      month: index,
+      total: entry.total,
+      count: entry.count,
+    }));
+
+    res.status(200).json(formattedStats);
   }
-
-  const formattedStats = monthlyStats.map((entry, index) => ({
-    month: index,
-    total: entry.total,
-    count: entry.count,
-  }));
-
-  res.status(200).json(formattedStats);
-});
+);

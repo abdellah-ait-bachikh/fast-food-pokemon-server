@@ -10,7 +10,7 @@ export const getImageByName = asyncHandler(
       "../../uploads/images/categories",
       imageName
     );
-    console.log(imagePath);
+  
     if (fs.existsSync(imagePath)) {
       console.log("exist");
       res.sendFile(imagePath);

@@ -145,7 +145,7 @@ model PaymentOfferDetail {
 model Day {
   id               Int              @id @default(autoincrement())
   startAt          DateTime         @default(now())
-  stopeAt          DateTime?
+  stopAt          DateTime?
   paymentsProducts PaymentProduct[]
   paymentsOffers   PaymentOffer[]
 
