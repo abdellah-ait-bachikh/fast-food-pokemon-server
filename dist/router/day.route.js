@@ -1,0 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const day_controller_1 = require("../controller/day.controller");
+const dayRouter = (0, express_1.Router)();
+dayRouter.get("/count-payments", day_controller_1.getDaysWithPaymentsCounts);
+dayRouter.get("/latest", day_controller_1.getLatestDay);
+dayRouter.get("/show/:id", day_controller_1.getDayShow);
+exports.default = dayRouter;

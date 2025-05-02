@@ -7,4 +7,5 @@ homeRouter.get("/payments-status", home_controller_1.getPaymentsSatus);
 homeRouter.get("/top-ranking-products", home_controller_1.getTopRankingProducts);
 homeRouter.get("/top-ranking-offers", home_controller_1.getTopRankingOffers);
 homeRouter.get("/top-ranking-deleverys", home_controller_1.getDeleveryStatus);
+homeRouter.get("/mountly-payments", home_controller_1.getMonthlyPaymentStats);
 exports.default = homeRouter;

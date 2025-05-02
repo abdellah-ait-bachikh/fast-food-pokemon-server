@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDeleveryStatus = exports.getTopRankingOffers = exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
+exports.getMonthlyPaymentStats = exports.getDeleveryStatus = exports.getTopRankingOffers = exports.getTopRankingProducts = exports.getPaymentsSatus = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getPaymentsSatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -167,4 +167,35 @@ exports.getDeleveryStatus = (0, utils_1.asyncHandler)((req, res) => __awaiter(vo
     //     const statusDelevery = awaitdb.pay;
     //   })
     // );
+}));
+exports.getMonthlyPaymentStats = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const now = new Date();
+    const startYear = new Date(now.getFullYear(), 0, 1);
+    const [productPayments, offerPayments] = yield Promise.all([
+        db_1.default.paymentProduct.findMany({
+            where: { isPayed: true, createdAt: { gte: startYear } },
+            select: { totalePrice: true, createdAt: true },
+        }),
+        db_1.default.paymentOffer.findMany({
+            where: { isPayed: true, createdAt: { gte: startYear } },
+            select: { totalePrice: true, createdAt: true },
+        }),
+    ]);
+    const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
+        month: i, // 0 = Jan
+        total: 0,
+        count: 0,
+    }));
+    const allPayments = [...productPayments, ...offerPayments];
+    for (const payment of allPayments) {
+        const month = new Date(payment.createdAt).getMonth();
+        monthlyStats[month].total += Number(payment.totalePrice || 0);
+        monthlyStats[month].count += 1;
+    }
+    const formattedStats = monthlyStats.map((entry, index) => ({
+        month: index,
+        total: entry.total,
+        count: entry.count,
+    }));
+    res.status(200).json(formattedStats);
 }));
