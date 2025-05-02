@@ -81,14 +81,20 @@ exports.getTopRankingProducts = (0, utils_1.asyncHandler)((req, res) => __awaite
                 category: {
                     select: {
                         name: true,
-                        imageFile: true,
+                        imageUri: true,
                     },
                 },
             },
         });
         return Object.assign(Object.assign({ id: item.productId }, product), { quantity: item._sum.quantity || 0 });
     })));
-    res.status(200).json({ rankingProducts, shart: { labels: rankingProducts.map(e => { var _a; return `${e.name} ${(_a = e.category) === null || _a === void 0 ? void 0 : _a.name}`; }), series: rankingProducts.map(e => e.quantity) } });
+    res.status(200).json({
+        rankingProducts,
+        shart: {
+            labels: rankingProducts.map((e) => { var _a; return `${e.name} ${(_a = e.category) === null || _a === void 0 ? void 0 : _a.name}`; }),
+            series: rankingProducts.map((e) => e.quantity),
+        },
+    });
 }));
 exports.getTopRankingOffers = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const topOfferByQuantity = yield db_1.default.paymentOfferDetail.groupBy({
@@ -108,7 +114,7 @@ exports.getTopRankingOffers = (0, utils_1.asyncHandler)((req, res) => __awaiter(
             select: {
                 name: true,
                 createdAt: true,
-                imageFile: true,
+                imageUri: true,
             },
         });
         return Object.assign(Object.assign({ id: item.offerId }, offer), { quantity: item._sum.quantity });

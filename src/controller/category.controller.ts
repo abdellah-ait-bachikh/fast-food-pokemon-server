@@ -177,7 +177,7 @@ export const updateCategory = asyncHandler(
   async (req: Request<{}, {}, TupdateCategory>, res: Response) => {
     console.log(req.body);
     const { id } = req.params as { id: string };
-    const { name, position,imageUri } = req.body;
+    const { name, position, imageUri } = req.body;
     const newImageName = req.file?.filename;
     let updatedImageUri: string | null | undefined = undefined;
     const existCategory = await db.category.findUnique({
@@ -194,10 +194,10 @@ export const updateCategory = asyncHandler(
       res.status(400).json({ message: "Erreur de validation", errors });
       return;
     }
-    if(imageUri===null){
-      updatedImageUri = null
-    }else if(newImageName) {
-      updatedImageUri=newImageName
+    if (imageUri === null) {
+      updatedImageUri = null;
+    } else if (newImageName) {
+      updatedImageUri = newImageName;
     }
     const newCategory = await db.category.update({
       where: {
@@ -215,7 +215,7 @@ export const updateCategory = asyncHandler(
         },
       },
     });
-    if (updatedImageUri || updatedImageUri===null) {
+    if (updatedImageUri || updatedImageUri === null) {
       if (existCategory.imageUri) {
         deleteFile(existCategory.imageUri, "uploads/images/categories");
       }

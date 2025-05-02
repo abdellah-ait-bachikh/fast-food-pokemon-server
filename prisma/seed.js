@@ -13,92 +13,87 @@ const client_1 = require("@prisma/client");
 const db = new client_1.PrismaClient();
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
-        // Clear existing data
         yield db.paymentProductDetail.deleteMany();
         yield db.paymentProduct.deleteMany();
         yield db.product.deleteMany();
         yield db.category.deleteMany();
         yield db.user.deleteMany();
         yield db.day.deleteMany();
-        // Seed categories
         yield db.category.createMany({
             data: [
-                { name: 'Boissons', position: 1, imageFile: 'boissons.jpg' },
-                { name: 'Snacks', position: 2, imageFile: 'snacks.jpg' },
-                { name: 'Paninis', position: 3, imageFile: 'paninis.jpg' },
+                { name: "Boissons", position: 1 },
+                { name: "Snacks", position: 2 },
+                { name: "Paninis", position: 3 },
             ],
         });
-        const boissons = yield db.category.findUnique({ where: { name: 'Boissons' } });
-        const snacks = yield db.category.findUnique({ where: { name: 'Snacks' } });
-        const paninis = yield db.category.findUnique({ where: { name: 'Paninis' } });
-        // Seed products
+        const boissons = yield db.category.findUnique({
+            where: { name: "Boissons" },
+        });
+        const snacks = yield db.category.findUnique({ where: { name: "Snacks" } });
+        const paninis = yield db.category.findUnique({ where: { name: "Paninis" } });
         yield db.product.createMany({
             data: [
                 {
-                    name: 'Coca-Cola 33cl',
+                    name: "Coca-Cola 33cl",
                     price: 8,
                     categoryId: boissons === null || boissons === void 0 ? void 0 : boissons.id,
-                    type: 'CHARBON',
+                    type: "CHARBON",
                     position: 1,
                 },
                 {
-                    name: 'Fanta Orange 33cl',
+                    name: "Fanta Orange 33cl",
                     price: 8,
                     categoryId: boissons === null || boissons === void 0 ? void 0 : boissons.id,
-                    type: 'CHARBON',
+                    type: "CHARBON",
                     position: 2,
                 },
                 {
-                    name: 'Chips Lays Fromage',
+                    name: "Chips Lays Fromage",
                     price: 5,
                     categoryId: snacks === null || snacks === void 0 ? void 0 : snacks.id,
-                    type: 'FOUR',
+                    type: "FOUR",
                     position: 1,
                 },
                 {
-                    name: 'Chocolat Kinder',
+                    name: "Chocolat Kinder",
                     price: 6,
                     categoryId: snacks === null || snacks === void 0 ? void 0 : snacks.id,
-                    type: 'FOUR',
+                    type: "FOUR",
                     position: 2,
                 },
                 {
-                    name: 'Panini Poulet Fromage',
+                    name: "Panini Poulet Fromage",
                     price: 20,
                     categoryId: paninis === null || paninis === void 0 ? void 0 : paninis.id,
-                    type: 'PANINI',
+                    type: "PANINI",
                     position: 1,
                 },
                 {
-                    name: 'Panini Thon Olive',
+                    name: "Panini Thon Olive",
                     price: 20,
                     categoryId: paninis === null || paninis === void 0 ? void 0 : paninis.id,
-                    type: 'PANINI',
+                    type: "PANINI",
                     position: 2,
                 },
             ],
         });
-        // Seed one delivery user
         const livreur = yield db.user.create({
             data: {
-                userName: 'livreur1',
-                password: 'hashedpassword123',
-                phone: '0600000000',
-                role: 'LIVREUR',
+                userName: "livreur1",
+                password: "hashedpassword123",
+                phone: "0600000000",
+                role: "LIVREUR",
             },
         });
-        // Seed one day
         const day = yield db.day.create({
             data: {
                 startAt: new Date(),
             },
         });
-        // Fetch products
         const products = yield db.product.findMany();
-        // Seed 4 payments
-        for (let i = 1; i <= 4; i++) {
+        for (let i = 1; i <= 6; i++) {
             const details = products.slice(0, 3).map((product, idx) => {
-                const quantity = (i + idx) % 4 + 1; // quantity 1-4
+                const quantity = ((i + idx) % 4) + 1;
                 return {
                     productId: product.id,
                     quantity,
@@ -122,12 +117,12 @@ function main() {
                 },
             });
         }
-        console.log('✅ Seed completed with categories, products, and payments!');
+        console.log("✅ Seed completed with categories, products, and payments!");
     });
 }
 main()
     .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    console.error("❌ Seed failed:", e);
     process.exit(1);
 })
     .finally(() => __awaiter(void 0, void 0, void 0, function* () {

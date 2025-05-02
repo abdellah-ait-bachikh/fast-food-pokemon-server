@@ -79,7 +79,7 @@ export const getTopRankingProducts = asyncHandler(
             category: {
               select: {
                 name: true,
-                imageFile: true,
+                imageUri: true,
               },
             },
           },
@@ -91,7 +91,13 @@ export const getTopRankingProducts = asyncHandler(
         };
       })
     );
-    res.status(200).json({rankingProducts,shart:{labels:rankingProducts.map(e=>`${e.name} ${e.category?.name}`),series:rankingProducts.map(e=>e.quantity)}});
+    res.status(200).json({
+      rankingProducts,
+      shart: {
+        labels: rankingProducts.map((e) => `${e.name} ${e.category?.name}`),
+        series: rankingProducts.map((e) => e.quantity),
+      },
+    });
   }
 );
 
@@ -115,7 +121,7 @@ export const getTopRankingOffers = asyncHandler(
           select: {
             name: true,
             createdAt: true,
-            imageFile: true,
+            imageUri: true,
           },
         });
         return { id: item.offerId, ...offer, quantity: item._sum.quantity };
