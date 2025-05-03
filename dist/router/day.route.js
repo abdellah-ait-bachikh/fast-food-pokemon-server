@@ -7,4 +7,5 @@ dayRouter.get("/count-payments", day_controller_1.getDaysWithPaymentsCounts);
 dayRouter.get("/latest", day_controller_1.getLatestDay);
 dayRouter.get("/show/:id", day_controller_1.getDayShow);
 dayRouter.put("/stop/:id", day_controller_1.stopDay);
+dayRouter.delete("/:id", day_controller_1.deleteDay);
 exports.default = dayRouter;

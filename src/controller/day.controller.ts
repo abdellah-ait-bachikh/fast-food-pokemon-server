@@ -138,17 +138,19 @@ export const createDay = asyncHandler(
         startAt: new Date(),
       },
     });
-    res.status(201).json({ message: "La journée a démarré avec succès." });
+    res
+      .status(201)
+      .json({ message: "La journée a démarré avec succès.", day: newDay });
   }
 );
 
 export const stopDay = asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const dayId = parseInt(id);
-    if (isNaN(dayId)) {
-      res.status(400).json({ message: "ID  invalide." });
-      return;
-    }
+  const { id } = req.params;
+  const dayId = parseInt(id);
+  if (isNaN(dayId)) {
+    res.status(400).json({ message: "ID  invalide." });
+    return;
+  }
 
   const latestDay = await db.day.findUnique({
     where: {
@@ -177,4 +179,23 @@ export const stopDay = asyncHandler(async (req: Request, res: Response) => {
     message: "Journée clôturée avec succès.",
     data: stoppedDay,
   });
+});
+
+export const deleteDay = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const exist = await db.day.findUnique({
+    where: {
+      id: parseInt(id),
+    },
+  });
+  if (!exist) {
+    res.status(404).json({ message: "Aucune journée trouvée." });
+    return;
+  }
+  await db.day.delete({
+    where: {
+      id: parseInt(id),
+    },
+  });
+  res.status(200).json({ message: "Journée supprimée avec succès." });
 });

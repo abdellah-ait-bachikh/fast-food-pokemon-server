@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteDay,
     getDayShow,
   getDaysWithPaymentsCounts,
   getLatestDay,
@@ -11,5 +12,7 @@ dayRouter.get("/latest", getLatestDay);
 dayRouter.get("/show/:id", getDayShow);
 
 dayRouter.put("/stop/:id", stopDay);
+
+dayRouter.delete("/:id", deleteDay);
 
 export default dayRouter;

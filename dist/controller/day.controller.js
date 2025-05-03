@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.stopDay = exports.createDay = exports.getDayShow = exports.getLatestDay = exports.getDaysWithPaymentsCounts = void 0;
+exports.deleteDay = exports.stopDay = exports.createDay = exports.getDayShow = exports.getLatestDay = exports.getDaysWithPaymentsCounts = void 0;
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -151,7 +151,9 @@ exports.createDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, vo
             startAt: new Date(),
         },
     });
-    res.status(201).json({ message: "La journée a démarré avec succès." });
+    res
+        .status(201)
+        .json({ message: "La journée a démarré avec succès.", day: newDay });
 }));
 exports.stopDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
@@ -183,4 +185,22 @@ exports.stopDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void
         message: "Journée clôturée avec succès.",
         data: stoppedDay,
     });
+}));
+exports.deleteDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const exist = yield db_1.default.day.findUnique({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    if (!exist) {
+        res.status(404).json({ message: "Aucune journée trouvée." });
+        return;
+    }
+    yield db_1.default.day.delete({
+        where: {
+            id: parseInt(id),
+        },
+    });
+    res.status(200).json({ message: "Journée supprimée avec succès." });
 }));
