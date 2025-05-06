@@ -27,7 +27,7 @@ exports.deleteDay = exports.stopDay = exports.createDay = exports.getDayShow = e
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { rowsPerPage, startAt, page } = req.query;
+    const { rowsPerPage = 'all', startAt, page } = req.query;
     let from;
     let fromEnd;
     if (startAt && !isNaN(new Date(startAt).getTime())) {
@@ -40,7 +40,12 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
             ? undefined
             : parseInt(rowsPerPage)
         : undefined;
-    const skip = isNaN(parseInt(rowsPerPage)) ? undefined : "";
+    const currentPage = !isNaN(parseInt(page)) ? parseInt(page) : 1;
+    const skip = take ? (currentPage - 1) * take : undefined;
+    // Count total days for pagination (use same where filter if needed)
+    const total = yield db_1.default.day.count({
+        where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
+    });
     const days = yield db_1.default.day.findMany({
         where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
         include: {
@@ -54,7 +59,7 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
         orderBy: {
             startAt: "desc",
         },
-        take,
+        take, skip
     });
     const formatedDays = days.map((item) => {
         const { paymentsOffers, paymentsProducts } = item, rest = __rest(item, ["paymentsOffers", "paymentsProducts"]);
@@ -64,7 +69,12 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
                 paymentsOffers: item.paymentsOffers.length,
             } });
     });
-    res.status(200).json({ days: formatedDays });
+    res.status(200).json({ days: formatedDays, pagination: {
+            total,
+            currentPage,
+            rowsPerPage: take !== null && take !== void 0 ? take : total,
+            totalPages: take ? Math.ceil(total / take) : 1,
+        }, });
 }));
 exports.getLatestDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const latestDay = yield db_1.default.day.findFirst({ orderBy: { startAt: "desc" } });

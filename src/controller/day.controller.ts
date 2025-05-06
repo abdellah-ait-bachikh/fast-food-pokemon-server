@@ -4,7 +4,7 @@ import db from "../lib/db";
 
 export const getDaysWithPaymentsCounts = asyncHandler(
   async (req: Request, res: Response) => {
-    const { rowsPerPage, startAt, page } = req.query;
+    const { rowsPerPage='all', startAt, page } = req.query;
     let from: Date | undefined;
     let fromEnd: Date | undefined;
 
@@ -26,7 +26,15 @@ export const getDaysWithPaymentsCounts = asyncHandler(
         ? undefined
         : parseInt(rowsPerPage as string)
       : undefined;
-    const skip = isNaN(parseInt(rowsPerPage as string)) ? undefined : "";
+     
+      const currentPage = !isNaN(parseInt(page as string)) ? parseInt(page as string) : 1;
+
+      const skip = take ? (currentPage - 1) * take : undefined;
+  
+      // Count total days for pagination (use same where filter if needed)
+      const total = await db.day.count({
+        where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
+      });
     const days = await db.day.findMany({
       where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
       include: {
@@ -40,7 +48,7 @@ export const getDaysWithPaymentsCounts = asyncHandler(
       orderBy: {
         startAt: "desc",
       },
-      take,
+      take,skip
     });
     const formatedDays = days.map((item) => {
       const { paymentsOffers, paymentsProducts, ...rest } = item;
@@ -53,7 +61,12 @@ export const getDaysWithPaymentsCounts = asyncHandler(
         },
       };
     });
-    res.status(200).json({days:formatedDays});
+    res.status(200).json({ days: formatedDays, pagination: {
+      total,
+      currentPage,
+      rowsPerPage: take ?? total,
+      totalPages: take ? Math.ceil(total / take) : 1,
+    }, });
   }
 );
 
