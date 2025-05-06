@@ -1,7 +1,8 @@
 import { Router } from "express";
 import {
+  createDay,
   deleteDay,
-    getDayShow,
+  getDayShow,
   getDaysWithPaymentsCounts,
   getLatestDay,
   stopDay,
@@ -10,6 +11,8 @@ const dayRouter = Router();
 dayRouter.get("/count-payments", getDaysWithPaymentsCounts);
 dayRouter.get("/latest", getLatestDay);
 dayRouter.get("/show/:id", getDayShow);
+
+dayRouter.post("/", createDay);
 
 dayRouter.put("/stop/:id", stopDay);
 

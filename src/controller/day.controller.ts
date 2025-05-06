@@ -4,7 +4,31 @@ import db from "../lib/db";
 
 export const getDaysWithPaymentsCounts = asyncHandler(
   async (req: Request, res: Response) => {
+    const { rowsPerPage, startAt, page } = req.query;
+    let from: Date | undefined;
+    let fromEnd: Date | undefined;
+
+    if (startAt && !isNaN(new Date(startAt as string).getTime())) {
+      const parsedDate = new Date(startAt as string);
+      from = new Date(
+        parsedDate.getFullYear(),
+        parsedDate.getMonth(),
+        parsedDate.getDate()
+      );
+      fromEnd = new Date(
+        parsedDate.getFullYear(),
+        parsedDate.getMonth(),
+        parsedDate.getDate() + 1
+      );
+    }
+    const take = rowsPerPage
+      ? isNaN(parseInt(rowsPerPage as string))
+        ? undefined
+        : parseInt(rowsPerPage as string)
+      : undefined;
+    const skip = isNaN(parseInt(rowsPerPage as string)) ? undefined : "";
     const days = await db.day.findMany({
+      where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
       include: {
         paymentsOffers: { select: { id: true } },
         paymentsProducts: {
@@ -16,6 +40,7 @@ export const getDaysWithPaymentsCounts = asyncHandler(
       orderBy: {
         startAt: "desc",
       },
+      take,
     });
     const formatedDays = days.map((item) => {
       const { paymentsOffers, paymentsProducts, ...rest } = item;
@@ -23,10 +48,12 @@ export const getDaysWithPaymentsCounts = asyncHandler(
         ...rest,
         _count: {
           payments: item.paymentsOffers.length + item.paymentsProducts.length,
+          paymentsProducts: item.paymentsProducts.length,
+          paymentsOffers: item.paymentsOffers.length,
         },
       };
     });
-    res.status(200).json(formatedDays);
+    res.status(200).json({days:formatedDays});
   }
 );
 
@@ -177,7 +204,7 @@ export const stopDay = asyncHandler(async (req: Request, res: Response) => {
 
   res.status(200).json({
     message: "Journée clôturée avec succès.",
-    data: stoppedDay,
+    day: stoppedDay,
   });
 });
 

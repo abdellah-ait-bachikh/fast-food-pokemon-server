@@ -27,7 +27,22 @@ exports.deleteDay = exports.stopDay = exports.createDay = exports.getDayShow = e
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { rowsPerPage, startAt, page } = req.query;
+    let from;
+    let fromEnd;
+    if (startAt && !isNaN(new Date(startAt).getTime())) {
+        const parsedDate = new Date(startAt);
+        from = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate());
+        fromEnd = new Date(parsedDate.getFullYear(), parsedDate.getMonth(), parsedDate.getDate() + 1);
+    }
+    const take = rowsPerPage
+        ? isNaN(parseInt(rowsPerPage))
+            ? undefined
+            : parseInt(rowsPerPage)
+        : undefined;
+    const skip = isNaN(parseInt(rowsPerPage)) ? undefined : "";
     const days = yield db_1.default.day.findMany({
+        where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
         include: {
             paymentsOffers: { select: { id: true } },
             paymentsProducts: {
@@ -39,14 +54,17 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
         orderBy: {
             startAt: "desc",
         },
+        take,
     });
     const formatedDays = days.map((item) => {
         const { paymentsOffers, paymentsProducts } = item, rest = __rest(item, ["paymentsOffers", "paymentsProducts"]);
         return Object.assign(Object.assign({}, rest), { _count: {
                 payments: item.paymentsOffers.length + item.paymentsProducts.length,
+                paymentsProducts: item.paymentsProducts.length,
+                paymentsOffers: item.paymentsOffers.length,
             } });
     });
-    res.status(200).json(formatedDays);
+    res.status(200).json({ days: formatedDays });
 }));
 exports.getLatestDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const latestDay = yield db_1.default.day.findFirst({ orderBy: { startAt: "desc" } });
@@ -183,7 +201,7 @@ exports.stopDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void
     });
     res.status(200).json({
         message: "Journée clôturée avec succès.",
-        data: stoppedDay,
+        day: stoppedDay,
     });
 }));
 exports.deleteDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
