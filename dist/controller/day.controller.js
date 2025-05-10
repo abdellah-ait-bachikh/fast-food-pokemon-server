@@ -27,7 +27,7 @@ exports.deleteDay = exports.stopDay = exports.createDay = exports.getDayShow = e
 const utils_1 = require("../lib/utils");
 const db_1 = __importDefault(require("../lib/db"));
 exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { rowsPerPage = 'all', startAt, page } = req.query;
+    const { rowsPerPage = "all", startAt, page } = req.query;
     let from;
     let fromEnd;
     if (startAt && !isNaN(new Date(startAt).getTime())) {
@@ -40,7 +40,9 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
             ? undefined
             : parseInt(rowsPerPage)
         : undefined;
-    const currentPage = !isNaN(parseInt(page)) ? parseInt(page) : 1;
+    const currentPage = !isNaN(parseInt(page))
+        ? parseInt(page)
+        : 1;
     const skip = take ? (currentPage - 1) * take : undefined;
     // Count total days for pagination (use same where filter if needed)
     const total = yield db_1.default.day.count({
@@ -59,7 +61,8 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
         orderBy: {
             startAt: "desc",
         },
-        take, skip
+        take,
+        skip,
     });
     const formatedDays = days.map((item) => {
         const { paymentsOffers, paymentsProducts } = item, rest = __rest(item, ["paymentsOffers", "paymentsProducts"]);
@@ -69,12 +72,15 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
                 paymentsOffers: item.paymentsOffers.length,
             } });
     });
-    res.status(200).json({ days: formatedDays, pagination: {
+    res.status(200).json({
+        days: formatedDays,
+        pagination: {
             total,
             currentPage,
             rowsPerPage: take !== null && take !== void 0 ? take : total,
             totalPages: take ? Math.ceil(total / take) : 1,
-        }, });
+        },
+    });
 }));
 exports.getLatestDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const latestDay = yield db_1.default.day.findFirst({ orderBy: { startAt: "desc" } });
@@ -160,7 +166,70 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
             },
         },
     });
-    res.status(200).json(Object.assign(Object.assign({}, day), { deleverys }));
+    const deliveryEarnings = yield Promise.all(deleverys.map((delevry) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c, _d;
+        // Sum total prices of products delivered
+        const totalProducts = yield db_1.default.paymentProduct.aggregate({
+            where: { delevryId: delevry.id, dayId },
+            _sum: {
+                totalePrice: true,
+                delevryPrice: true,
+            },
+        });
+        // Sum total prices of offers delivered
+        const totalOffers = yield db_1.default.paymentOffer.aggregate({
+            where: { delevryId: delevry.id, dayId },
+            _sum: {
+                totalePrice: true,
+                delevryPrice: true,
+            },
+        });
+        return Object.assign(Object.assign({}, delevry), { totalEarnings: ((_a = totalProducts._sum.totalePrice) !== null && _a !== void 0 ? _a : 0) +
+                ((_b = totalOffers._sum.totalePrice) !== null && _b !== void 0 ? _b : 0), totalDeleveryPrice: ((_c = totalProducts._sum.delevryPrice) !== null && _c !== void 0 ? _c : 0) +
+                ((_d = totalOffers._sum.delevryPrice) !== null && _d !== void 0 ? _d : 0) });
+    })));
+    const productDetails = yield db_1.default.paymentProductDetail.findMany({
+        where: { payment: { dayId } },
+        include: {
+            product: {
+                select: { name: true, category: { select: { name: true } } },
+            },
+        },
+    });
+    const offerDetails = yield db_1.default.paymentOfferDetail.findMany({
+        where: { payment: { dayId } },
+        include: {
+            offer: {
+                select: { name: true },
+            },
+        },
+    });
+    const productChartData = productDetails.reduce((acc, item) => {
+        var _a, _b;
+        const label = `${item.product.name} ${(_b = (_a = item.product.category) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : ''}`;
+        if (!acc[label])
+            acc[label] = 0;
+        acc[label] += item.quantity;
+        return acc;
+    }, {});
+    const offerChartData = offerDetails.reduce((acc, item) => {
+        const label = item.offer.name;
+        if (!acc[label])
+            acc[label] = 0;
+        acc[label] += item.quantity;
+        return acc;
+    }, {});
+    const shart = {
+        products: {
+            labels: Object.keys(productChartData),
+            series: Object.values(productChartData),
+        },
+        offers: {
+            labels: Object.keys(offerChartData),
+            series: Object.values(offerChartData),
+        },
+    };
+    res.status(200).json(Object.assign(Object.assign({}, day), { deleverys: deliveryEarnings, shart }));
 }));
 exports.createDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const latestDay = yield db_1.default.day.findFirst({

@@ -28,7 +28,7 @@ model Category {
   id        Int       @id @default(autoincrement())
   position  Int?
   name      String    @unique
-  imageUri String?
+  imageUri  String?
   products  Product[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -37,51 +37,51 @@ model Category {
 }
 
 model Product {
-  id                    Int                     @id @default(autoincrement())
+  id                    Int                    @id @default(autoincrement())
   position              Int?
   name                  String
   price                 Float
-  isPublish             Boolean                 @default(true)
+  isPublish             Boolean                @default(true)
   type                  ProductType?
   categoryId            Int?
-  category              Category?               @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  category              Category?              @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   paymentsProduct       PaymentProduct[]
   Offers                Offer[]
   paymentProductDetails PaymentProductDetail[]
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
 
   @@map("products")
 }
 
 model PaymentProduct {
-  id                Int                     @id @default(autoincrement())
-  dailyNumber       Int                     @default(0)
+  id                Int                    @id @default(autoincrement())
+  dailyNumber       Int                    @default(0)
   products          Product[]
   detailsProducts   PaymentProductDetail[]
   totalePrice       Float
-  isPayed           Boolean                 @default(true)
+  isPayed           Boolean                @default(true)
   delevryPrice      Float?
   clientPhoneNumber String?
   delevryId         Int?
-  delevry           User?                   @relation(fields: [delevryId], references: [id], onDelete: SetNull)
+  delevry           User?                  @relation(fields: [delevryId], references: [id], onDelete: SetNull)
   order             Order?
   dayId             Int
-  day               Day                     @relation(fields: [dayId], references: [id], onDelete: Cascade)
-  createdAt         DateTime                @default(now())
-  updatedAt         DateTime                @updatedAt
+  day               Day                    @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
 
   @@map("payments")
 }
 
 model PaymentProductDetail {
-  id        Int            @id @default(autoincrement())
-  productId Int
-  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
-  paymentId Int
-  payment   PaymentProduct @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  quantity  Int @default(1)
-  totalePrice Float 
+  id          Int            @id @default(autoincrement())
+  productId   Int
+  product     Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  paymentId   Int
+  payment     PaymentProduct @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  quantity    Int            @default(1)
+  totalePrice Float
 }
 
 model Order {
@@ -100,52 +100,54 @@ model Order {
 }
 
 model Offer {
-  id             Int            @id @default(autoincrement())
-  name           String
-  products       Product[]
-  price          Float
-  isPublish      Boolean        @default(true)
-  imageUri      String?
-  PaymentsOffers PaymentOffer[]
+  id                   Int                  @id @default(autoincrement())
+  name                 String
+  products             Product[]
+  price                Float
+  isPublish            Boolean              @default(true)
+  imageUri             String?
+  PaymentsOffers       PaymentOffer[]
   paymentsOfferDetails PaymentOfferDetail[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 
   @@map("offers")
 }
 
 model PaymentOffer {
-  id                Int      @id @default(autoincrement())
-  dailyNumber       Int      @default(0)
+  id                Int                  @id @default(autoincrement())
+  dailyNumber       Int                  @default(0)
   offers            Offer[]
-  detailsOffer          PaymentOfferDetail[]
-  isPayed           Boolean  @default(true)
+  detailsOffer      PaymentOfferDetail[]
+  isPayed           Boolean              @default(true)
   totalePrice       Float
   delevryPrice      Float?
   clientPhoneNumber String?
   delevryId         Int?
-  delevry           User?    @relation(fields: [delevryId], references: [id], onDelete: SetNull)
+  delevry           User?                @relation(fields: [delevryId], references: [id], onDelete: SetNull)
   order             Order?
   dayId             Int
-  day               Day      @relation(fields: [dayId], references: [id], onDelete: Cascade)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  day               Day                  @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
 
   @@map("payment_offer")
 }
+
 model PaymentOfferDetail {
-  id        Int            @id @default(autoincrement())
-  offerId   Int
-  offer     Offer          @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  paymentId Int
-  payment   PaymentOffer   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  quantity  Int @default(1)
-  totalePrice Float 
+  id          Int          @id @default(autoincrement())
+  offerId     Int
+  offer       Offer        @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  paymentId   Int
+  payment     PaymentOffer @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  quantity    Int          @default(1)
+  totalePrice Float
 }
+
 model Day {
   id               Int              @id @default(autoincrement())
   startAt          DateTime         @default(now())
-  stopAt          DateTime?
+  stopAt           DateTime?
   paymentsProducts PaymentProduct[]
   paymentsOffers   PaymentOffer[]
 
