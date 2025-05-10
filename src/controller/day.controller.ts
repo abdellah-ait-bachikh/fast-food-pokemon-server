@@ -40,10 +40,14 @@ export const getDaysWithPaymentsCounts = asyncHandler(
     const days = await db.day.findMany({
       where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
       include: {
-        paymentsOffers: { select: { id: true } },
+        paymentsOffers: {
+          select: { id: true, totalePrice: true, delevryPrice: true },
+        },
         paymentsProducts: {
           select: {
             id: true,
+            totalePrice: true,
+            delevryPrice: true,
           },
         },
       },
@@ -53,8 +57,32 @@ export const getDaysWithPaymentsCounts = asyncHandler(
       take,
       skip,
     });
+    // Format the days with payment counts and money totals
     const formatedDays = days.map((item) => {
       const { paymentsOffers, paymentsProducts, ...rest } = item;
+
+      // Calculate the total money excluding delivery price
+      const totalMoneyWithoutDelivery =
+        paymentsOffers.reduce(
+          (sum, offer) => sum + (offer.totalePrice || 0),
+          0
+        ) +
+        paymentsProducts.reduce(
+          (sum, product) => sum + (product.totalePrice || 0),
+          0
+        );
+
+      // Calculate the total delivery price
+      const totalDeliveryPrice =
+        paymentsOffers.reduce(
+          (sum, offer) => sum + (offer.delevryPrice || 0),
+          0
+        ) +
+        paymentsProducts.reduce(
+          (sum, product) => sum + (product.delevryPrice || 0),
+          0
+        );
+
       return {
         ...rest,
         _count: {
@@ -62,6 +90,8 @@ export const getDaysWithPaymentsCounts = asyncHandler(
           paymentsProducts: item.paymentsProducts.length,
           paymentsOffers: item.paymentsOffers.length,
         },
+        totalMoneyWithoutDelivery,
+        totalDeliveryPrice,
       };
     });
     res.status(200).json({
@@ -213,7 +243,7 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
   });
 
   const productChartData = productDetails.reduce((acc, item) => {
-    const label = `${item.product.name} ${item.product.category?.name ?? ''}`;
+    const label = `${item.product.name} ${item.product.category?.name ?? ""}`;
     if (!acc[label]) acc[label] = 0;
     acc[label] += item.quantity;
     return acc;
@@ -236,7 +266,7 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
       series: Object.values(offerChartData),
     },
   };
-  res.status(200).json({ ...day, deleverys: deliveryEarnings,shart });
+  res.status(200).json({ ...day, deleverys: deliveryEarnings, shart });
 });
 
 export const createDay = asyncHandler(

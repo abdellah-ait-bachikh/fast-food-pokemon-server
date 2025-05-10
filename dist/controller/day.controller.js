@@ -51,10 +51,14 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
     const days = yield db_1.default.day.findMany({
         where: from ? { startAt: { gte: from, lt: fromEnd } } : {},
         include: {
-            paymentsOffers: { select: { id: true } },
+            paymentsOffers: {
+                select: { id: true, totalePrice: true, delevryPrice: true },
+            },
             paymentsProducts: {
                 select: {
                     id: true,
+                    totalePrice: true,
+                    delevryPrice: true,
                 },
             },
         },
@@ -64,13 +68,21 @@ exports.getDaysWithPaymentsCounts = (0, utils_1.asyncHandler)((req, res) => __aw
         take,
         skip,
     });
+    // Format the days with payment counts and money totals
     const formatedDays = days.map((item) => {
         const { paymentsOffers, paymentsProducts } = item, rest = __rest(item, ["paymentsOffers", "paymentsProducts"]);
+        // Calculate the total money excluding delivery price
+        const totalMoneyWithoutDelivery = paymentsOffers.reduce((sum, offer) => sum + (offer.totalePrice || 0), 0) +
+            paymentsProducts.reduce((sum, product) => sum + (product.totalePrice || 0), 0);
+        // Calculate the total delivery price
+        const totalDeliveryPrice = paymentsOffers.reduce((sum, offer) => sum + (offer.delevryPrice || 0), 0) +
+            paymentsProducts.reduce((sum, product) => sum + (product.delevryPrice || 0), 0);
         return Object.assign(Object.assign({}, rest), { _count: {
                 payments: item.paymentsOffers.length + item.paymentsProducts.length,
                 paymentsProducts: item.paymentsProducts.length,
                 paymentsOffers: item.paymentsOffers.length,
-            } });
+            }, totalMoneyWithoutDelivery,
+            totalDeliveryPrice });
     });
     res.status(200).json({
         days: formatedDays,
@@ -206,7 +218,7 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
     });
     const productChartData = productDetails.reduce((acc, item) => {
         var _a, _b;
-        const label = `${item.product.name} ${(_b = (_a = item.product.category) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : ''}`;
+        const label = `${item.product.name} ${(_b = (_a = item.product.category) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : ""}`;
         if (!acc[label])
             acc[label] = 0;
         acc[label] += item.quantity;
