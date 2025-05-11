@@ -121,7 +121,7 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
                         select: {
                             id: true,
                             quantity: true,
-                            offer: { select: { name: true, price: true, imageUri: true } },
+                            offer: { select: { id: true, name: true, price: true, imageUri: true } },
                             totalePrice: true,
                         },
                     },
@@ -140,6 +140,7 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
                             quantity: true,
                             product: {
                                 select: {
+                                    id: true,
                                     name: true,
                                     price: true,
                                     category: {
@@ -241,7 +242,41 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
             series: Object.values(offerChartData),
         },
     };
-    res.status(200).json(Object.assign(Object.assign({}, day), { deleverys: deliveryEarnings, shart }));
+    // Aggregate Products
+    const productMap = new Map();
+    day.paymentsProducts.flatMap((p) => p.detailsProducts.forEach((detail) => {
+        var _a, _b;
+        if (productMap.has(detail.product.id)) {
+            productMap.get(detail.product.id).quantity += detail.quantity;
+        }
+        else {
+            productMap.set(detail.product.id, {
+                id: detail.product.id,
+                name: detail.product.name,
+                quantity: detail.quantity,
+                category: {
+                    name: (_b = (_a = detail.product.category) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : "Unknown",
+                },
+            });
+        }
+    }));
+    const products = Array.from(productMap.values());
+    // Aggregate Offers
+    const offerMap = new Map();
+    day.paymentsOffers.flatMap((o) => o.detailsOffer.forEach((detail) => {
+        if (offerMap.has(detail.offer.id)) {
+            offerMap.get(detail.offer.id).quantity += detail.quantity;
+        }
+        else {
+            offerMap.set(detail.offer.id, {
+                id: detail.offer.id,
+                name: detail.offer.name,
+                quantity: detail.quantity,
+            });
+        }
+    }));
+    const offers = Array.from(offerMap.values());
+    res.status(200).json(Object.assign(Object.assign({}, day), { deleverys: deliveryEarnings, shart, products, offers }));
 }));
 exports.createDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const latestDay = yield db_1.default.day.findFirst({
