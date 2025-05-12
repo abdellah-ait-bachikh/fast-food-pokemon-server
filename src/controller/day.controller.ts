@@ -285,7 +285,7 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
       }
     })
   );
-  const products = Array.from(productMap.values());
+  const products = Array.from(productMap.values()).sort((a,b)=>b.quantity - a.quantity)  ;
 
   // Aggregate Offers
   const offerMap = new Map();
@@ -302,7 +302,7 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
       }
     })
   );
-  const offers = Array.from(offerMap.values());
+  const offers = Array.from(offerMap.values()).sort((a,b)=>b.quantity - a.quantity);
 
   res.status(200).json({ ...day, deleverys: deliveryEarnings, shart,products,offers });
 });

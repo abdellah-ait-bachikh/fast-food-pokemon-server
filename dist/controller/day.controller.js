@@ -260,7 +260,7 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
             });
         }
     }));
-    const products = Array.from(productMap.values());
+    const products = Array.from(productMap.values()).sort((a, b) => b.quantity - a.quantity);
     // Aggregate Offers
     const offerMap = new Map();
     day.paymentsOffers.flatMap((o) => o.detailsOffer.forEach((detail) => {
@@ -275,7 +275,7 @@ exports.getDayShow = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, v
             });
         }
     }));
-    const offers = Array.from(offerMap.values());
+    const offers = Array.from(offerMap.values()).sort((a, b) => b.quantity - a.quantity);
     res.status(200).json(Object.assign(Object.assign({}, day), { deleverys: deliveryEarnings, shart, products, offers }));
 }));
 exports.createDay = (0, utils_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
