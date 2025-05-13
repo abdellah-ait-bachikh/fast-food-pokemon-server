@@ -267,7 +267,6 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
       series: Object.values(offerChartData),
     },
   };
-   // Aggregate Products
   const productMap = new Map();
   day.paymentsProducts.flatMap((p) =>
     p.detailsProducts.forEach((detail) => {
@@ -287,7 +286,7 @@ export const getDayShow = asyncHandler(async (req: Request, res: Response) => {
   );
   const products = Array.from(productMap.values()).sort((a,b)=>b.quantity - a.quantity)  ;
 
-  // Aggregate Offers
+
   const offerMap = new Map();
   day.paymentsOffers.flatMap((o) =>
     o.detailsOffer.forEach((detail) => {
